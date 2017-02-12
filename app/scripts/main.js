@@ -54,7 +54,7 @@
 
   var waypoints = new Waypoint({
     element : featuredVideo,
-    offset  : Math.floor((featuredVideoHeight * -1) * 0.75),
+    offset  : featuredVideoHeight / -2,
     handler : function(direction) {
 
       if ( 'down' === direction && featuredVideo.classList.contains('is-playing') ) {
