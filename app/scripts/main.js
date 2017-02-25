@@ -1,16 +1,23 @@
-(function() {
+/* eslint
+	no-unused-vars: ["error", { "vars": "local", "varsIgnorePattern": "player" }]
+*/
+jQuery( function( $ ) {
 
   var player;
-  var featuredVideo = document.getElementById('featured-video');
-  var featuredVideoHeight = featuredVideo.clientHeight;
+
+  var $window = $( window );
+  var $featuredMedia = $( "#featured-media" ); // Container.
+  var $featuredVideo = $( "#featured-video" ); // Actual Video.
+  var top = $featuredMedia.offset().top;
+  var offset = Math.floor( top + ( $featuredMedia.outerHeight() / 2 ) );
 
   window.onYouTubeIframeAPIReady = function() {
-    player = new YT.Player('featured-video', {
+    player = new YT.Player( "featured-video", {
       events: {
-        'onStateChange': onPlayerStateChange
+        "onStateChange": onPlayerStateChange
       }
-    });
-  }
+    } );
+  };
 
   /**
    * Run when the Youtube video state (play, pause, etc.) change.
@@ -24,7 +31,7 @@
     var isPause = 2 === event.data;
     var isEnd = 0 === event.data;
 
-    toggleVideoClasses(isPlay, isPause, isEnd);
+    toggleVideoClasses( isPlay, isPause, isEnd );
   }
 
   /**
@@ -37,33 +44,86 @@
    */
   function toggleVideoClasses( play, pause, end ) {
 
-      if ( play ) {
-        featuredVideo.classList.remove('is-paused');
-        featuredVideo.classList.toggle('is-playing');
-      }
+    if ( play ) {
+      $featuredVideo.removeClass( "is-paused" );
+      $featuredVideo.toggleClass( "is-playing" );
+    }
 
-      if ( pause ) {
-        featuredVideo.classList.remove('is-playing');
-        featuredVideo.classList.toggle('is-paused');
-      }
+    if ( pause ) {
+      $featuredVideo.removeClass( "is-playing" );
+      $featuredVideo.toggleClass( "is-paused" );
+    }
 
-      if ( end ) {
-        featuredVideo.classList.remove('is-playing', 'is-paused');
-      }
+    if ( end ) {
+      $featuredVideo.removeClass( "is-playing", "is-paused" );
+    }
   }
 
-  var waypoints = new Waypoint({
-    element : featuredVideo,
-    offset  : featuredVideoHeight / -2,
-    handler : function(direction) {
+  /**
+   * _.Underscore.js throttle.
+   *
+   * Delay executing a function. It will reduce the notifications of an event that fires multiple times.
+   *
+   * @see http://stackoverflow.com/questions/27078285/simple-throttle-in-js
+   *
+   * @param {Function} func    The function to execute.
+   * @param {Number}   wait    The delay time.
+   * @param {Object}   options Some options.
+   * @return {Function} The function to execute.
+   */
+  function throttle( func, wait, options ) {
 
-      if ( 'down' === direction && featuredVideo.classList.contains('is-playing') ) {
-        featuredVideo.classList.add('is-sticky');
-      }
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if ( !options ) {
+      options = {};
+    }
 
-      if ( 'up' === direction && featuredVideo.classList.contains('is-sticky') ) {
-        featuredVideo.classList.remove('is-sticky');
+    var later = function() {
+      previous = options.leading === false ? 0 : Date.now();
+      timeout = null;
+      result = func.apply( context, args );
+      if ( !timeout ) {
+        context = args = null;
       }
-    },
-  });
-})();
+    };
+
+    return function() {
+      var now = Date.now();
+      if ( !previous && options.leading === false ) {
+        previous = now;
+      }
+      var remaining = wait - ( now - previous );
+      context = this;
+      args = arguments;
+      if ( remaining <= 0 || remaining > wait ) {
+        if ( timeout ) {
+          clearTimeout( timeout );
+          timeout = null;
+        }
+        previous = now;
+        result = func.apply( context, args );
+        if ( !timeout ) {
+          context = args = null;
+        }
+      } else if ( !timeout && options.trailing !== false ) {
+        timeout = setTimeout( later, remaining );
+      }
+      return result;
+    };
+  };
+
+  $window
+
+    .on( "resize", throttle( function() {
+      top = $featuredMedia.offset().top;
+      offset = Math.floor( top + ( $featuredMedia.outerHeight() / 2 ) );
+    }, 150 ) )
+
+    .on( "scroll", throttle( function() {
+      $featuredVideo.toggleClass( "is-sticky",
+        $window.scrollTop() > offset && $featuredVideo.hasClass( "is-playing" )
+      );
+    }, 150 ) );
+} );

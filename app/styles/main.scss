@@ -38,13 +38,13 @@ body {
     margin: 0;
   }
 }
-.featured-media--video {
+.content-media--video {
   background-color: #ddd;
   display: block;
 	position: relative;
 	padding: 0 0 ( ( 158px / 280px ) * 100% ) 0;
 }
-.featured-media--video iframe {
+.content-media--video iframe {
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -94,5 +94,25 @@ body {
   max-height: 158px;
   width: 280px;
   height: 158px;
-  transform: translateX(-115%);
+  @media screen and (min-width: 1120px) {
+    transform: translateX(-80%);
+  }
+  @media screen and (min-width: 1300px) {
+    transform: translateX(-115%);
+  }
+
+  /**
+   * Optional, position should adjust following user behaviour;
+   * whether the left-handed or right-handed.
+   *
+   * So it is often better to keep the video on top.
+   */
+  @media screen and (max-width: 480px) {
+    top: auto;
+    bottom: 15px;
+
+    // Compensating smaller screen.
+    max-width: 200px;
+    max-height: 113px;
+  }
 }

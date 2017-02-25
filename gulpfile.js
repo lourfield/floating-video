@@ -79,7 +79,7 @@ gulp.task('extras', () => {
     'app/*',
     '!app/*.html'
   ], {
-    dot: true
+    dot: false
   }).pipe(gulp.dest('dist'));
 });
 
